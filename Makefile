@@ -3,12 +3,15 @@ PKG := "github.com/egregors/$(PROJECT_NAME)"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
-.PHONY: all lint test update-go-deps run
+.PHONY: all lint test update-go-deps run docker
 
 all: run
 
 build:  ## Build binary
-		GO111MODULE=on CGO_ENABLED=0 go build -mod=vendor -o zb ./main.go
+	GO111MODULE=on CGO_ENABLED=0 go build -mod=vendor -o zenb ./main.go
+
+docker: ## build Docker image
+	@docker build -t zenb .
 
 run:  ## Run dev bin
 	@go run main.go
