@@ -23,7 +23,10 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-    
+      env:
+        ZEN_USERNAME: ${{ secrets.TEST_USERNAME }}
+        ZEN_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v2.5.2
 
