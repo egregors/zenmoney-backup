@@ -11,10 +11,10 @@ all: run
 build:  ## Build binary
 	GO111MODULE=on CGO_ENABLED=0 go build -mod=vendor -o zenb ./main.go
 
-docker: ## build Docker image
+docker: ## Build Docker image
 	@docker build -t zenb .
 
-run:  ## Run dev bin
+run:  ## Run in debug mode
 	@go run main.go
 
 lint:  ## Lint the files

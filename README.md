@@ -63,6 +63,27 @@ Credentials and settings could be passed like a CLI arguments either ENV.
 | -t    | --sleep_time   | SLEEP_TIME   | Backup performs every SLEEP_TIME minutes (default: 24h) |
 |       | --dbg          | DEBUG        | Debug mode                                              |
 
+## Development
+
+Use `Makefile` to development stuff. 
+
+```shell
+git:(main) ✗ make help
+Usage: make [task]
+
+task                 help
+------               ----
+build                Build binary
+docker               Build Docker image
+run                  Run in debug mode
+lint                 Lint the files
+test                 Run tests
+                     
+update-go-deps       Updating Go dependencies
+                     
+help                 Show help message
+```
+
 ## Contributing
 Bug reports, bug fixes and new features are always welcome.
 Please open issues and submit pull requests for any new code.
