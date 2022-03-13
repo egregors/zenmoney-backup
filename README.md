@@ -3,9 +3,8 @@
 Backup your [zenmoney](zenmoney.ru) data by schedule.
 
 - Backup all your data as `csv` files
-- Different storage backends
-- Configurable backup schedule
-- Docker image
+- Configurable schedule
+- Tiny docker image
 
 ---
 <div align="center">
