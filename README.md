@@ -10,22 +10,51 @@ Backup your [zenmoney](zenmoney.ru) data by schedule.
 ---
 <div align="center">
 
-[![Build Status](https://github.com/egregors/zenmoney-backup/actions/workflows/go.yml/badge.svg)](https://github.com/egregors/zenmoney-backup/actions) [![Coverage Status](https://coveralls.io/repos/github/egregors/zenmoney-backup/badge.svg?branch=main)](https://coveralls.io/github/egregors/zenmoney-backup?branch=main)
+[![Build Status](https://github.com/egregors/zenmoney-backup/actions/workflows/go.yml/badge.svg)](https://github.com/egregors/zenmoney-backup/actions) 
+[![Coverage Status](https://coveralls.io/repos/github/egregors/zenmoney-backup/badge.svg?branch=main)](https://coveralls.io/github/egregors/zenmoney-backup?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/egregors/zenmoney-backup)](https://goreportcard.com/report/github.com/egregors/zenmoney-backup)
 
 </div>
 
 ## Usage
 
+The simplest way to run backing is use [docker image](https://github.com/egregors/zenmoney-backup/pkgs/container/zenmoney-backup%2Fzenb)
+
+### Docker
+To start backups pulling container just run:
+
+```shell
+docker run --rm                         \
+  -e ZEN_USERNAME=your_zenmoney_login   \
+  -e ZEN_PASSWORD=your_zenmoney_pass    \
+  -e SLEEP_TIME=24h                     \
+  -v $(pwd):/backups                    \
+  ghcr.io/egregors/zenmoney-backup/zenb
+```
+
+Don't forget change `your_zenmoney_login` and `your_zenmoney_pass` to your login and pass respectively. 
+Backup files will be saved in your current directory. To change it define absolut path to the folder you need instead of `$(pwd)`.
+
+TODO: add gif with example
+
+To build `image` locally pull this repo and run `make docker`.
+
 ### Binary
 
-To make binary just download this repo and run `make build`.
+You cat use binary as well. To make binary just download this repo and run `make build`.
 
 ```shell
 git clone https://github.com/egregors/zenmoney-backup.git
 make build
 ```
 
-### Params
+Credentials and settings could be passed like a CLI arguments either ENV.
+
+```shell
+./zenb -l MyUsername -p MySuperSecretPass --sleep_time=24h
+```
+
+#### Params
 
 | short | long           | ENV          |                                                         |
 |-------|----------------|--------------|---------------------------------------------------------|
@@ -34,9 +63,6 @@ make build
 | -t    | --sleep_time   | SLEEP_TIME   | Backup performs every SLEEP_TIME minutes (default: 24h) |
 |       | --dbg          | DEBUG        | Debug mode                                              |
 
-### Docker
-
-```shell
-docker run --rm -e ZEN_USERNAME=*** -e ZEN_PASSWORD=*** -e SLEEP_TIME=24h -v $(pwd):/backups zenb
-```
-
+## Contributing
+Bug reports, bug fixes and new features are always welcome.
+Please open issues and submit pull requests for any new code.
