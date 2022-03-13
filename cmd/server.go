@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/egregors/zenmoney-backup/store"
 	log "github.com/go-pkgz/lgr"
 )
 
@@ -34,13 +33,12 @@ type Server struct {
 }
 
 // NewServer makes Server from options
-func NewServer(login, password string, sleepTime time.Duration) *Server {
+func NewServer(login, password string, sleepTime time.Duration, storage Saver) *Server {
 	return &Server{
 		username:  login,
 		password:  password,
 		sleepTime: sleepTime,
-		// todo: add backup folder path as path
-		store: store.LocalFs{},
+		store:     storage,
 	}
 }
 
@@ -78,7 +76,7 @@ func (srv *Server) saveExport() {
 		return
 	}
 
-	fileName := srv.genFileName()
+	fileName := srv.genFileName(time.Now())
 	err = srv.store.Save(fileName, bs)
 	if err != nil {
 		log.Printf("[ERROR] downloading failed: %s", err)
@@ -202,6 +200,6 @@ func (srv *Server) export() ([]byte, error) {
 	return bs, nil
 }
 
-func (srv *Server) genFileName() string {
-	return fmt.Sprintf("zen_%s.csv", time.Now().Format("2006-01-02_15-04-05"))
+func (srv *Server) genFileName(t time.Time) string {
+	return fmt.Sprintf("zen_%s.csv", t.Format("2006-01-02_15-04-05"))
 }

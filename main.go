@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/egregors/zenmoney-backup/cmd"
+	"github.com/egregors/zenmoney-backup/store"
 	log "github.com/go-pkgz/lgr"
 	"github.com/jessevdk/go-flags"
 )
@@ -71,5 +72,5 @@ func makeServer(opts Opts) (*cmd.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cmd.NewServer(opts.ZenUsername, opts.ZenPassword, d), nil
+	return cmd.NewServer(opts.ZenUsername, opts.ZenPassword, d, store.LocalFs{}), nil
 }

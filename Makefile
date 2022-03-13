@@ -2,6 +2,7 @@ PROJECT_NAME := "zenmoney-backup"
 PKG := "github.com/egregors/$(PROJECT_NAME)"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
+include .env
 
 .PHONY: all lint test update-go-deps run docker
 
@@ -20,9 +21,9 @@ lint:  ## Lint the files
 	@echo "Linting ..."
 	@golangci-lint run --config .golangci.yml ./...
 
-test:  ## Run unittests
+test:  ## Run tests
 	@echo "Testing ..."
-	@go test -short ${PKG_LIST}
+	@export ZEN_USERNAME=${ZEN_USERNAME} ZEN_PASSWORD=${ZEN_PASSWORD} && go test -short ${PKG_LIST}
 
 ## Deps
 
