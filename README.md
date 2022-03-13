@@ -35,7 +35,7 @@ docker run --rm                         \
 Don't forget change `your_zenmoney_login` and `your_zenmoney_pass` to your login and pass respectively. 
 Backup files will be saved in your current directory. To change it define absolut path to the folder you need instead of `$(pwd)`.
 
-TODO: add gif with example
+![Screen-Recording-2022-03-13-at-23 41 47](https://user-images.githubusercontent.com/2153895/158082440-224b2551-1dee-4a03-854d-3a58e0bd4f5a.gif)
 
 To build `image` locally pull this repo and run `make docker`.
 
