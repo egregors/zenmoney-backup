@@ -12,5 +12,9 @@ zenb
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dir with backup files
+# Dir with backup files and backups
 /backups
+*.csv
+
+# Config
+.env
