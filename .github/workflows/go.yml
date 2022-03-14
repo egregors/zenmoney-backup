@@ -21,13 +21,14 @@ jobs:
     - name: Build and Test
       run: |
         go get -v
-        go test -timeout=60s -race -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp
+        go test -timeout=60s -race -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
         cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "_mock.go" > $GITHUB_WORKSPACE/profile.cov
         go build -race
       env:
         ZEN_USERNAME: ${{ secrets.TEST_USERNAME }}
         ZEN_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         GO111MODULE: "on"
+        GOFLAGS: "-mod=vendor"
 
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v2.5.2
