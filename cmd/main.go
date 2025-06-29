@@ -16,9 +16,8 @@ import (
 
 // Opts is App settings (from cli args or ENV)
 type Opts struct {
-	ZenUsername string `short:"l" long:"zen_username" env:"ZEN_USERNAME" description:"Your zenmoney username"`
-	ZenPassword string `short:"p" long:"zen_password" env:"ZEN_PASSWORD" description:"Your zenmoney password"`
-	SleepTime   string `short:"t" long:"sleep_time" env:"SLEEP_TIME" default:"24h" description:"Backup performs every SLEEP_TIME minutes"`
+	Token     string `short:"t" long:"zenmoney OAuth token" env:"ZEN_TOKEN" description:"Zenmoney API Token, to get it visit: https://zerro.app/token"`
+	SleepTime string `short:"p" long:"sleep_time" env:"SLEEP_TIME" default:"24h" description:"Backup performs every SLEEP_TIME minutes"`
 
 	Dbg bool `long:"dbg" env:"DEBUG" description:"Debug mode"`
 }
@@ -39,7 +38,7 @@ func main() {
 
 	setupLog(opts.Dbg)
 
-	srv, err := makeServer(opts)
+	s, err := makeServer(opts)
 	if err != nil {
 		log.Printf("[FATAL] can't make server: %s", err)
 		os.Exit(1)
@@ -56,7 +55,7 @@ func main() {
 		log.Printf("[INFO] shutting down")
 	}(cancel)
 
-	srv.Run(ctx)
+	s.Run(ctx)
 }
 
 func setupLog(dbg bool) {
@@ -72,5 +71,5 @@ func makeServer(opts Opts) (*srv.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return srv.NewServer(opts.ZenUsername, opts.ZenPassword, d, store.LocalFs{}), nil
+	return srv.NewServer(opts.Token, d, store.LocalFs{}), nil
 }

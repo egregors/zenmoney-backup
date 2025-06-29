@@ -1,10 +1,12 @@
-# zenmoney-backup 
+# ZenMoney Backup
 
-Backup your [zenmoney](zenmoney.ru) data by schedule.
+Automatically backup your [ZenMoney](https://zenmoney.ru) data using the official API with OAuth token authentication.
 
-- Backup all your data as `csv` files
-- Configurable schedule
-- Tiny docker image
+- 🔐 Secure API-based authentication with OAuth tokens
+- 📦 Full data export as JSON files  
+- ⏰ Configurable backup schedule
+- 🐳 Lightweight Docker image (~8.5MB)
+- 🔄 Automatic retry and error handling
 
 ---
 <div align="center">
@@ -15,74 +17,195 @@ Backup your [zenmoney](zenmoney.ru) data by schedule.
 
 </div>
 
-## Usage
+## 🚀 Quick Start
 
-The simplest way to run backing is use [docker image](https://github.com/egregors/zenmoney-backup/pkgs/container/zenmoney-backup%2Fzenb)
+### Get Your API Token
 
-### Docker
-To start backups pulling container just run:
+First, you need to obtain an OAuth token from ZenMoney:
 
-```shell
-docker run --rm                         \
-  -e ZEN_USERNAME=your_zenmoney_login   \
-  -e ZEN_PASSWORD=your_zenmoney_pass    \
-  -e SLEEP_TIME=24h                     \
-  -v $(pwd):/backups                    \
-  ghcr.io/egregors/zenmoney-backup/zenb
+1. Visit [https://zerro.app/token](https://zerro.app/token) (or [https://zenmoney.ru/api](https://zenmoney.ru/api))
+2. Log in to your ZenMoney account
+3. Generate an API token
+4. Copy the token for use with the backup tool
+
+### Docker (Recommended)
+
+The easiest way to run backups is using the Docker image:
+
+```bash
+docker run --rm \
+  -e ZEN_TOKEN="your_oauth_token_here" \
+  -e SLEEP_TIME="24h" \
+  -v $(pwd)/backups:/backups \
+  zenb:latest
 ```
 
-Don't forget change `your_zenmoney_login` and `your_zenmoney_pass` to your login and pass respectively. 
-Backup files will be saved in your current directory. To change it define absolut path to the folder you need instead of `$(pwd)`.
+Replace `your_oauth_token_here` with your actual OAuth token from the step above.
 
-![termtosvg_hcs4cfax](https://user-images.githubusercontent.com/2153895/158082850-47c1d4fd-0883-44ea-a246-729a60d7e51d.svg)
+**Parameters:**
+- `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
+- `SLEEP_TIME`: Backup interval (default: 24h)
+- `DEBUG`: Set to `true` for debug logging
 
-To build `image` locally pull this repo and run `make docker`.
+**Volume mounting:**
+- The container saves backups to `/backups` directory
+- Mount your local directory to persist backups: `-v $(pwd)/backups:/backups`
 
 ### Binary
 
-You cat use binary as well. To make binary just download this repo and run `make build`.
+You can also run the application as a standalone binary:
 
-```shell
+```bash
+# Download and build
 git clone https://github.com/egregors/zenmoney-backup.git
+cd zenmoney-backup
+make build-local
+
+# Run with your token
+./build/zenb -t "your_oauth_token_here" --sleep_time="24h"
+```
+
+## 📋 Command Line Options
+
+| Short | Long | Environment | Description |
+|-------|------|-------------|-------------|
+| `-t` | `--zenmoney OAuth token` | `ZEN_TOKEN` | ZenMoney API Token (required) |
+| `-p` | `--sleep_time` | `SLEEP_TIME` | Backup interval (default: 24h) |
+| | `--dbg` | `DEBUG` | Enable debug mode |
+
+## 📁 Backup Format
+
+The tool creates JSON backup files in the `backups/` directory with the following naming convention:
+
+```
+zen_2024-06-29_15-30-45.json
+```
+
+Each backup contains:
+- All transactions
+- Account information
+- Categories
+- Tags and labels
+- Other ZenMoney data
+
+The JSON format preserves all data structure and can be easily processed by other tools if needed.
+
+## 🔧 Development
+
+### Prerequisites
+
+- Go 1.24+
+- Docker (optional)
+- Make
+
+### Building
+
+```bash
+# Build for current OS
+make build-local
+
+# Build for Linux (Docker-compatible)
 make build
+
+# Build Docker image
+make docker
+
+# Run tests
+make test
+
+# View all available commands
+make help
 ```
 
-Credentials and settings could be passed like a CLI arguments either ENV.
+### Project Structure
 
-```shell
-./zenb -l MyUsername -p MySuperSecretPass --sleep_time=24h
+```
+├── cmd/           # Application entry point
+├── srv/           # Backup server logic
+├── store/         # Storage implementations
+├── backups/       # Default backup directory (created automatically)
+├── Dockerfile     # Docker build configuration
+└── Makefile       # Build automation
 ```
 
-#### Params
+## 🐳 Docker
 
-| short | long           | ENV          |                                                         |
-|-------|----------------|--------------|---------------------------------------------------------|
-| -l    | --zen_username | ZEN_USERNAME | Your zenmoney login                                     |
-| -p    | --zen_password | ZEN_PASSWORD | Your zenmoney password                                  |
-| -t    | --sleep_time   | SLEEP_TIME   | Backup performs every SLEEP_TIME minutes (default: 24h) |
-|       | --dbg          | DEBUG        | Debug mode                                              |
+### Build Image
 
-## Development
-
-Use `Makefile` to development stuff. 
-
-```shell
-git:(main) ✗ make help
-Usage: make [task]
-
-task                 help
-------               ----
-build                Build binary
-docker               Build Docker image
-run                  Run in debug mode
-lint                 Lint the files
-test                 Run tests
-                     
-update-go-deps       Updating Go dependencies
-                     
-help                 Show help message
+```bash
+make docker
 ```
 
-## Contributing
-Bug reports, bug fixes and new features are always welcome.
-Please open issues and submit pull requests for any new code.
+### Run Container
+
+```bash
+# Interactive run
+make docker-run
+
+# Background with custom settings
+docker run -d \
+  --name zenmoney-backup \
+  -e ZEN_TOKEN="your_token" \
+  -e SLEEP_TIME="12h" \
+  -v /host/path/to/backups:/backups \
+  zenb:latest
+
+# Check logs
+docker logs zenmoney-backup
+```
+
+### Environment Variables
+
+- `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
+- `SLEEP_TIME`: Backup interval (e.g., "1h", "30m", "24h")
+- `DEBUG`: Set to "true" for debug logging
+
+## 📊 Example Output
+
+```
+zenmoney-backup v1.2.3
+~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=[,,_,,]:3
+[INFO] login...
+[INFO] downloading...
+[DEBUG] downloading data ...
+[DEBUG] downloaded
+[INFO] zen_2024-06-29_15-30-45.json saved
+[INFO] sleep for 24h0m0s
+```
+
+## 🔒 Security Notes
+
+- Keep your OAuth token secure and never commit it to version control
+- The application doesn't store your credentials permanently
+- Backup files contain sensitive financial data - store them securely
+- Use environment variables or secure secret management in production
+
+## 🤝 Contributing
+
+Bug reports, bug fixes, and new features are always welcome! Please open issues and submit pull requests for any new code.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Run `make test` and `make lint`
+6. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙋‍♂️ Support
+
+If you encounter any issues:
+
+1. Check that your OAuth token is valid and active
+2. Ensure you have proper network connectivity
+3. Review the logs for error messages
+4. Open an issue on GitHub with details
+
+---
+
+Made with ❤️ for the ZenMoney community (thanks @nemirlev for ZenMoney go SDK)
