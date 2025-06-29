@@ -23,7 +23,7 @@ Automatically backup your [ZenMoney](https://zenmoney.ru) data using the officia
 
 First, you need to obtain an OAuth token from ZenMoney:
 
-1. Visit [https://zerro.app/token](https://zerro.app/token) (or [https://zenmoney.ru/api](https://zenmoney.ru/api))
+1. Visit [https://zerro.app/token](https://zerro.app/token)
 2. Log in to your ZenMoney account
 3. Generate an API token
 4. Copy the token for use with the backup tool
