@@ -23,5 +23,5 @@ func (l LocalFs) Save(filename string, bs []byte) error {
 }
 
 func createDownloadDir() error {
-	return os.MkdirAll(filepath.Join(".", downloadDir), os.FileMode(downloadDirPerm))
+	return os.MkdirAll(downloadDir, os.FileMode(downloadDirPerm))
 }
