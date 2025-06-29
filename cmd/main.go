@@ -1,7 +1,9 @@
+// Package main provides ZenMoney backup application.
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -14,7 +16,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-// Opts is App settings (from cli args or ENV)
+// Opts is App settings (from cli args or ENV).
 type Opts struct {
 	Token     string `short:"t" long:"zenmoney OAuth token" env:"ZEN_TOKEN" description:"Zenmoney API Token, to get it visit: https://zerro.app/token"`
 	SleepTime string `short:"p" long:"sleep_time" env:"SLEEP_TIME" default:"24h" description:"Backup performs every SLEEP_TIME minutes"`
@@ -30,7 +32,8 @@ func main() {
 	var opts Opts
 	p := flags.NewParser(&opts, flags.PrintErrors|flags.PassDoubleDash|flags.HelpFlag)
 	if _, err := p.Parse(); err != nil {
-		if err.(*flags.Error).Type != flags.ErrHelp {
+		var flagsErr *flags.Error
+		if errors.As(err, &flagsErr) && flagsErr.Type != flags.ErrHelp {
 			log.Printf("[ERROR] cli error: %v", err)
 		}
 		os.Exit(2)

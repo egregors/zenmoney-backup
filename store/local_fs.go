@@ -1,3 +1,4 @@
+// Package store provides storage implementations for backup files.
 package store
 
 import (
@@ -8,10 +9,10 @@ import (
 const downloadDir = "backups"
 const downloadDirPerm = 0o750
 
-// LocalFs is Saver to local disk
+// LocalFs is Saver to local disk.
 type LocalFs struct{}
 
-// Save performs writing file to disk
+// Save performs writing file to disk.
 func (l LocalFs) Save(filename string, bs []byte) error {
 	err := createDownloadDir()
 	if err != nil {

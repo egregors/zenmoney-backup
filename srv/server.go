@@ -1,3 +1,4 @@
+// Package srv provides backup server functionality.
 package srv
 
 import (
@@ -10,12 +11,12 @@ import (
 	"github.com/nemirlev/zenmoney-go-sdk/v2/api"
 )
 
-// Saver is interface for file storage
+// Saver is interface for file storage.
 type Saver interface {
 	Save(filename string, bs []byte) error
 }
 
-// Server is backup server
+// Server is backup server.
 type Server struct {
 	token     string
 	sleepTime time.Duration
@@ -23,7 +24,7 @@ type Server struct {
 	client    *api.Client
 }
 
-// NewServer makes Server from options
+// NewServer makes Server from options.
 func NewServer(token string, sleepTime time.Duration, storage Saver) *Server {
 	return &Server{
 		token:     token,
@@ -32,7 +33,7 @@ func NewServer(token string, sleepTime time.Duration, storage Saver) *Server {
 	}
 }
 
-// Run starts Server
+// Run starts Server.
 func (srv *Server) Run(ctx context.Context) {
 	log.Printf("[INFO] login...")
 
