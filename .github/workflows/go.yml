@@ -6,45 +6,42 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
+env:
+  GO_VERSION: '1.24'
 
-  build:
+jobs:
+  test:
+    name: Test and Lint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.17
-
-    - name: Build and Test
-      run: |
-        go get -v
-        go test -timeout=60s -race -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
-        cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "_mock.go" > $GITHUB_WORKSPACE/profile.cov
-        go build -race
-      env:
-        ZEN_USERNAME: ${{ secrets.TEST_USERNAME }}
-        ZEN_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-        GO111MODULE: "on"
-        GOFLAGS: "-mod=vendor"
+        go-version: ${{ env.GO_VERSION }}
 
     - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v2.5.2
-
-    - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: golangci/golangci-lint-action@v8
       with:
-        name: egregors/zenmoney-backup/zenb
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-        registry: ghcr.io
-    
-    - name: Install goveralls
-      run: GO111MODULE=off go get -u -v github.com/mattn/goveralls
+        version: latest
 
-    - name: Submit coverage
-      run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run tests
+      run: go test -v -race ./...
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Build
+      run: go build -o zenb ./cmd

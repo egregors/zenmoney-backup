@@ -14,7 +14,7 @@ func isDirExist(dirPath string) bool {
 	return !os.IsNotExist(err)
 }
 
-// tearDown removes temporary files and folders
+// tearDown removes temporary files and folders.
 func tearDown() {
 	_ = os.RemoveAll(downloadDir)
 }
@@ -27,7 +27,8 @@ func TestLocalFs_Save(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, isDirExist(downloadDir))
 	assert.True(t, isDirExist(path.Join(downloadDir, fName)))
-	f, _ := os.OpenFile(path.Join(downloadDir, fName), os.O_RDONLY, 0o0666)
+	// #nosec G304 - This is a test file with controlled input
+	f, _ := os.OpenFile(path.Join(downloadDir, fName), os.O_RDONLY, 0o0600)
 	bs, _ := io.ReadAll(f)
 	assert.Equal(t, string(content), string(bs))
 
@@ -36,7 +37,8 @@ func TestLocalFs_Save(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, isDirExist(downloadDir))
 	assert.True(t, isDirExist(path.Join(downloadDir, fName)))
-	f, _ = os.OpenFile(path.Join(downloadDir, fName), os.O_RDONLY, 0o0666)
+	// #nosec G304 - This is a test file with controlled input
+	f, _ = os.OpenFile(path.Join(downloadDir, fName), os.O_RDONLY, 0o0600)
 	bs, _ = io.ReadAll(f)
 	assert.Equal(t, string(content), string(bs))
 
