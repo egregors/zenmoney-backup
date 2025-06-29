@@ -86,33 +86,5 @@ linters-settings:
       - name: exported
         disabled: true
 
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - dupl
-        - gosec
-        - goconst
-    
-    - text: "should have a package comment"
-      linters:
-        - revive
-        - golint
-    
-    - text: "at least one file in a package should have a package comment"
-      linters:
-        - staticcheck
-    
-    - source: "//go:generate"
-      linters:
-        - lll
-  
-  exclude-dirs:
-    - vendor
-    - third_party
-  
-  exclude-files:
-    - ".*\\.pb\\.go$"
-  
   max-issues-per-linter: 0
   max-same-issues: 0
