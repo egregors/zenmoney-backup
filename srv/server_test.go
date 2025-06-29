@@ -20,7 +20,7 @@ func TestNewServer(t *testing.T) {
 	s := NewServer(token, dur, saverMock{})
 	assert.NotNil(t, s)
 	assert.Equal(t, token, s.token)
-	assert.Equal(t, dur, dur)
+	assert.Equal(t, dur, s.sleepTime)
 }
 
 func TestServer_genFileName(t *testing.T) {

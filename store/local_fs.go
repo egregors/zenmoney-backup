@@ -6,6 +6,7 @@ import (
 )
 
 const downloadDir = "backups"
+const downloadDirPerm = 0o750
 
 // LocalFs is Saver to local disk
 type LocalFs struct{}
@@ -21,5 +22,5 @@ func (l LocalFs) Save(filename string, bs []byte) error {
 }
 
 func createDownloadDir() error {
-	return os.MkdirAll(filepath.Join(".", downloadDir), os.FileMode(0o750))
+	return os.MkdirAll(filepath.Join(".", downloadDir), os.FileMode(downloadDirPerm))
 }
