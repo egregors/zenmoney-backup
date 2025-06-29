@@ -69,13 +69,7 @@ dev:  ## Run in development mode
 
 lint:  ## Lint the code
 	@echo "Linting code..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run ./...; \
-	else \
-		echo "golangci-lint not found, using go vet and go fmt"; \
-		go vet ./...; \
-		go fmt ./...; \
-	fi
+	golangci-lint run ./...; 
 
 test:  ## Run tests
 	@echo "Running tests..."
