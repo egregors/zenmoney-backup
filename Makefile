@@ -9,13 +9,13 @@ include .env
 all: run
 
 build:  ## Build binary
-	GO111MODULE=on CGO_ENABLED=0 go build -mod=vendor -o zenb ./main.go
+	GO111MODULE=on CGO_ENABLED=0 go build -mod=vendor -o zenb ./cmd/main.go
 
 docker: ## Build Docker image
 	@docker build -t zenb .
 
 run:  ## Run in debug mode
-	@go run main.go
+	@go run cmd/main.go
 
 lint:  ## Lint the files
 	@echo "Linting ..."
