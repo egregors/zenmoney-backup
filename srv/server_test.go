@@ -29,13 +29,12 @@ func TestServer_TimeoutConfiguration(t *testing.T) {
 	// Test that different timeout values are properly set
 	tests := []struct {
 		name            string
-		timeoutSeconds  int
 		expectedTimeout time.Duration
 	}{
-		{"default timeout", 10, 10 * time.Second},
-		{"custom timeout", 30, 30 * time.Second},
-		{"short timeout", 5, 5 * time.Second},
-		{"long timeout", 60, 60 * time.Second},
+		{"default timeout", 10 * time.Second},
+		{"custom timeout", 30 * time.Second},
+		{"short timeout", 5 * time.Second},
+		{"long timeout", 60 * time.Second},
 	}
 
 	for _, tt := range tests {
