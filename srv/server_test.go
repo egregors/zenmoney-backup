@@ -16,11 +16,34 @@ func (s saverMock) Save(_ string, _ []byte) error {
 func TestNewServer(t *testing.T) {
 	token := "test_token"
 	dur := time.Minute * 30
+	timeout := time.Second * 15
 
-	s := NewServer(token, dur, saverMock{})
+	s := NewServer(token, dur, timeout, saverMock{})
 	assert.NotNil(t, s)
 	assert.Equal(t, token, s.token)
 	assert.Equal(t, dur, s.sleepTime)
+	assert.Equal(t, timeout, s.timeout)
+}
+
+func TestServer_TimeoutConfiguration(t *testing.T) {
+	// Test that different timeout values are properly set
+	tests := []struct {
+		name            string
+		timeoutSeconds  int
+		expectedTimeout time.Duration
+	}{
+		{"default timeout", 10, 10 * time.Second},
+		{"custom timeout", 30, 30 * time.Second},
+		{"short timeout", 5, 5 * time.Second},
+		{"long timeout", 60, 60 * time.Second},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewServer("test_token", time.Hour, tt.expectedTimeout, saverMock{})
+			assert.Equal(t, tt.expectedTimeout, s.timeout)
+		})
+	}
 }
 
 func TestServer_genFileName(t *testing.T) {

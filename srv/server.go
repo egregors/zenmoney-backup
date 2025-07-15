@@ -20,15 +20,17 @@ type Saver interface {
 type Server struct {
 	token     string
 	sleepTime time.Duration
+	timeout   time.Duration
 	store     Saver
 	client    *api.Client
 }
 
 // NewServer makes Server from options.
-func NewServer(token string, sleepTime time.Duration, storage Saver) *Server {
+func NewServer(token string, sleepTime time.Duration, timeout time.Duration, storage Saver) *Server {
 	return &Server{
 		token:     token,
 		sleepTime: sleepTime,
+		timeout:   timeout,
 		store:     storage,
 	}
 }
@@ -78,7 +80,7 @@ func (srv *Server) saveExport(ctx context.Context) {
 
 func (srv *Server) export(ctx context.Context) ([]byte, error) {
 	log.Printf("[DEBUG] downloading data ...")
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, srv.timeout)
 	defer cancel()
 
 	resp, err := srv.client.FullSync(ctx)

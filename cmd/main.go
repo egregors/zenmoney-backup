@@ -20,6 +20,7 @@ import (
 type Opts struct {
 	Token     string `short:"t" long:"zenmoney OAuth token" env:"ZEN_TOKEN" description:"Zenmoney API Token, to get it visit: https://zerro.app/token"`
 	SleepTime string `short:"p" long:"sleep_time" env:"SLEEP_TIME" default:"24h" description:"Backup performs every SLEEP_TIME minutes"`
+	Timeout   int    `short:"c" long:"timeout" env:"TIMEOUT" default:"10" description:"Backup request timeout in seconds"`
 
 	Dbg bool `long:"dbg" env:"DEBUG" description:"Debug mode"`
 }
@@ -74,5 +75,11 @@ func makeServer(opts Opts) (*srv.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return srv.NewServer(opts.Token, d, store.LocalFs{}), nil
+	
+	if opts.Timeout <= 0 {
+		return nil, fmt.Errorf("timeout must be a positive integer, got %d", opts.Timeout)
+	}
+	
+	timeout := time.Duration(opts.Timeout) * time.Second
+	return srv.NewServer(opts.Token, d, timeout, store.LocalFs{}), nil
 }
