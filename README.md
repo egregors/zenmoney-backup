@@ -45,6 +45,7 @@ Replace `your_oauth_token_here` with your actual OAuth token from the step above
 **Parameters:**
 - `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
 - `SLEEP_TIME`: Backup interval (default: 24h)
+- `TIMEOUT`: Backup request timeout in seconds (default: 10)
 - `DEBUG`: Set to `true` for debug logging
 
 **Volume mounting:**
@@ -63,6 +64,9 @@ make build-local
 
 # Run with your token
 ./build/zenb -t "your_oauth_token_here" --sleep_time="24h"
+
+# Run with custom timeout (useful for large backup files)
+./build/zenb -t "your_oauth_token_here" -c 30
 ```
 
 ## 📋 Command Line Options
@@ -71,6 +75,7 @@ make build-local
 |-------|------|-------------|-------------|
 | `-t` | `--zenmoney OAuth token` | `ZEN_TOKEN` | ZenMoney API Token (required) |
 | `-p` | `--sleep_time` | `SLEEP_TIME` | Backup interval (default: 24h) |
+| `-c` | `--timeout` | `TIMEOUT` | Backup request timeout in seconds (default: 10) |
 | | `--dbg` | `DEBUG` | Enable debug mode |
 
 ## 📁 Backup Format
@@ -158,6 +163,7 @@ docker logs zenmoney-backup
 
 - `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
 - `SLEEP_TIME`: Backup interval (e.g., "1h", "30m", "24h")
+- `TIMEOUT`: Backup request timeout in seconds (default: 10)
 - `DEBUG`: Set to "true" for debug logging
 
 ## 📊 Example Output
