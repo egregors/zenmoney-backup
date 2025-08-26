@@ -6,7 +6,7 @@ require (
 	github.com/go-pkgz/lgr v0.12.1
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/nemirlev/zenmoney-go-sdk/v2 v2.0.4
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 )
 
 require (
