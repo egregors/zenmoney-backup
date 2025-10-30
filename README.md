@@ -166,6 +166,196 @@ docker logs zenmoney-backup
 - `TIMEOUT`: Backup request timeout in seconds (default: 10)
 - `DEBUG`: Set to "true" for debug logging
 
+## 🔄 Autostart on Linux (systemd)
+
+You can configure ZenMoney Backup to run automatically as a systemd service on Linux. This allows the backup tool to start on boot and restart automatically if it fails.
+
+### Binary Variant
+
+Create a systemd unit file for running the compiled binary:
+
+**File:** `/etc/systemd/system/zenmoney-backup.service`
+
+```ini
+[Unit]
+# Description of the service
+Description=ZenMoney Backup Service
+# Start after the network is available
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Run the service as a specific user (replace with your username)
+User=your_username
+# Working directory for the service
+WorkingDirectory=/opt/zenmoney-backup
+# Command to execute - adjust path to your binary location
+ExecStart=/opt/zenmoney-backup/zenb -t "${ZEN_TOKEN}" --sleep_time="${SLEEP_TIME}"
+# Restart policy - always restart if the service stops
+Restart=always
+# Wait 10 seconds before restarting after failure
+RestartSec=10
+# Environment variables for the service
+Environment="ZEN_TOKEN=your_token_here"
+Environment="SLEEP_TIME=24h"
+Environment="TIMEOUT=10"
+# Optional: Enable debug logging
+# Environment="DEBUG=true"
+
+[Install]
+# Enable the service to start on boot (multi-user target)
+WantedBy=multi-user.target
+```
+
+**Installation Steps:**
+
+1. Create the working directory and copy your binary:
+   ```bash
+   sudo mkdir -p /opt/zenmoney-backup
+   sudo cp /path/to/zenb /opt/zenmoney-backup/
+   sudo chmod +x /opt/zenmoney-backup/zenb
+   ```
+
+2. Create the systemd unit file:
+   ```bash
+   sudo nano /etc/systemd/system/zenmoney-backup.service
+   # Paste the configuration above, replacing placeholders with your values
+   ```
+
+3. Set proper permissions:
+   ```bash
+   sudo chmod 644 /etc/systemd/system/zenmoney-backup.service
+   ```
+
+4. Reload systemd to recognize the new service:
+   ```bash
+   sudo systemctl daemon-reload
+   ```
+
+5. Enable the service to start on boot:
+   ```bash
+   sudo systemctl enable zenmoney-backup.service
+   ```
+
+6. Start the service:
+   ```bash
+   sudo systemctl start zenmoney-backup.service
+   ```
+
+7. Check the service status:
+   ```bash
+   sudo systemctl status zenmoney-backup.service
+   ```
+
+8. View service logs:
+   ```bash
+   sudo journalctl -u zenmoney-backup.service -f
+   ```
+
+### Docker Variant
+
+Create a systemd unit file for running the backup tool via Docker:
+
+**File:** `/etc/systemd/system/zenmoney-backup.service`
+
+```ini
+[Unit]
+# Description of the service
+Description=ZenMoney Backup Docker Service
+# Start after Docker is available
+After=docker.service
+Requires=docker.service
+
+[Service]
+# Type of service - oneshot for container that may exit and restart
+Type=simple
+# Remove any existing container with the same name before starting
+ExecStartPre=-/usr/bin/docker rm -f zenmoney-backup
+# Start the Docker container with required parameters
+ExecStart=/usr/bin/docker run --rm \
+  --name zenmoney-backup \
+  -e ZEN_TOKEN=your_token_here \
+  -e SLEEP_TIME=24h \
+  -e TIMEOUT=10 \
+  -v /opt/zenmoney-backup/backups:/backups \
+  zenb:latest
+# Stop the container gracefully
+ExecStop=/usr/bin/docker stop zenmoney-backup
+# Restart policy - always restart if the container stops
+Restart=always
+# Wait 10 seconds before restarting after failure
+RestartSec=10
+
+[Install]
+# Enable the service to start on boot (multi-user target)
+WantedBy=multi-user.target
+```
+
+**Installation Steps:**
+
+1. Create the backup directory:
+   ```bash
+   sudo mkdir -p /opt/zenmoney-backup/backups
+   sudo chmod 755 /opt/zenmoney-backup/backups
+   ```
+
+2. Pull or build the Docker image:
+   ```bash
+   # Option 1: Build locally
+   cd /path/to/zenmoney-backup
+   make docker
+   
+   # Option 2: Pull from registry (if available)
+   # docker pull zenb:latest
+   ```
+
+3. Create the systemd unit file:
+   ```bash
+   sudo nano /etc/systemd/system/zenmoney-backup.service
+   # Paste the configuration above, replacing placeholders with your values
+   ```
+
+4. Set proper permissions:
+   ```bash
+   sudo chmod 644 /etc/systemd/system/zenmoney-backup.service
+   ```
+
+5. Reload systemd to recognize the new service:
+   ```bash
+   sudo systemctl daemon-reload
+   ```
+
+6. Enable the service to start on boot:
+   ```bash
+   sudo systemctl enable zenmoney-backup.service
+   ```
+
+7. Start the service:
+   ```bash
+   sudo systemctl start zenmoney-backup.service
+   ```
+
+8. Check the service status:
+   ```bash
+   sudo systemctl status zenmoney-backup.service
+   ```
+
+9. View service logs:
+   ```bash
+   sudo journalctl -u zenmoney-backup.service -f
+   # Or use Docker logs directly:
+   docker logs -f zenmoney-backup
+   ```
+
+**Notes:**
+- Replace `your_token_here` with your actual ZenMoney OAuth token
+- Adjust paths (`/opt/zenmoney-backup`) to match your preferred installation location
+- For the binary variant, replace `your_username` with the user that should run the service
+- You can customize `SLEEP_TIME`, `TIMEOUT`, and other environment variables as needed
+- Both variants will automatically restart the service if it crashes
+- Use `sudo systemctl stop zenmoney-backup.service` to stop the service
+- Use `sudo systemctl disable zenmoney-backup.service` to prevent auto-start on boot
+
 ## 📊 Example Output
 
 ```
