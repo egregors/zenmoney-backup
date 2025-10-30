@@ -185,7 +185,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-# Run the service as a specific user (replace with your username)
+# Run the service as a specific user (replace 'your_username' with actual system username)
 User=your_username
 # Working directory for the service
 WorkingDirectory=/opt/zenmoney-backup
@@ -267,11 +267,13 @@ After=docker.service
 Requires=docker.service
 
 [Service]
-# Type of service - oneshot for container that may exit and restart
+# Type of service - simple for long-running containers
 Type=simple
 # Remove any existing container with the same name before starting
+# The leading dash (-) means systemd will ignore failure if container doesn't exist
 ExecStartPre=-/usr/bin/docker rm -f zenmoney-backup
 # Start the Docker container with required parameters
+# Use backslash (\) for line continuation in systemd unit files
 ExecStart=/usr/bin/docker run --rm \
   --name zenmoney-backup \
   -e ZEN_TOKEN=your_token_here \
