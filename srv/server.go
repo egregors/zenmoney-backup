@@ -16,6 +16,11 @@ type Saver interface {
 	Save(filename string, bs []byte) error
 }
 
+// Notifier is an interface for sending notifications.
+type Notifier interface {
+	Notify(title, message string) error
+}
+
 // Server is backup server.
 type Server struct {
 	token     string
@@ -23,15 +28,17 @@ type Server struct {
 	timeout   time.Duration
 	store     Saver
 	client    *api.Client
+	notifier  Notifier
 }
 
 // NewServer makes Server from options.
-func NewServer(token string, sleepTime time.Duration, timeout time.Duration, storage Saver) *Server {
+func NewServer(token string, sleepTime time.Duration, timeout time.Duration, storage Saver, notifier Notifier) *Server {
 	return &Server{
 		token:     token,
 		sleepTime: sleepTime,
 		timeout:   timeout,
 		store:     storage,
+		notifier:  notifier,
 	}
 }
 
@@ -42,6 +49,7 @@ func (srv *Server) Run(ctx context.Context) {
 	client, err := api.NewClient(srv.token)
 	if err != nil {
 		log.Printf("[ERROR] failed to create client: %s", err)
+		srv.sendNotification("Client Creation Error", err.Error())
 		return
 	}
 	srv.client = client
@@ -65,6 +73,7 @@ func (srv *Server) saveExport(ctx context.Context) {
 	bs, err := srv.export(ctx)
 	if err != nil {
 		log.Printf("[ERROR] failed: %s", err)
+		srv.sendNotification("Backup Export Error", err.Error())
 		return
 	}
 
@@ -72,6 +81,7 @@ func (srv *Server) saveExport(ctx context.Context) {
 	err = srv.store.Save(fileName, bs)
 	if err != nil {
 		log.Printf("[ERROR] downloading failed: %s", err)
+		srv.sendNotification("Backup Save Error", err.Error())
 		return
 	}
 	log.Printf("[INFO] %s saved", fileName)
@@ -98,6 +108,14 @@ func (srv *Server) export(ctx context.Context) ([]byte, error) {
 
 	log.Printf("[DEBUG] downloaded")
 	return bs, nil
+}
+
+func (srv *Server) sendNotification(title, message string) {
+	if srv.notifier != nil {
+		if err := srv.notifier.Notify(title, message); err != nil {
+			log.Printf("[WARN] failed to send notification: %s", err)
+		}
+	}
 }
 
 func (srv *Server) genFileName(t time.Time) string {

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/egregors/zenmoney-backup/notifier"
 	"github.com/egregors/zenmoney-backup/srv"
 	"github.com/egregors/zenmoney-backup/store"
 	log "github.com/go-pkgz/lgr"
@@ -21,6 +22,7 @@ type Opts struct {
 	Token     string `short:"t" long:"zenmoney OAuth token" env:"ZEN_TOKEN" description:"Zenmoney API Token, to get it visit: https://zerro.app/token"`
 	SleepTime string `short:"p" long:"sleep_time" env:"SLEEP_TIME" default:"24h" description:"Backup performs every SLEEP_TIME minutes"`
 	Timeout   int    `short:"c" long:"timeout" env:"TIMEOUT" default:"10" description:"Backup request timeout in seconds"`
+	NotifyURL string `short:"n" long:"notify_url" env:"NOTIFY_URL" description:"ntfy.sh notification URL (e.g., https://ntfy.sh/your_topic)"`
 
 	Dbg bool `long:"dbg" env:"DEBUG" description:"Debug mode"`
 }
@@ -81,5 +83,15 @@ func makeServer(opts Opts) (*srv.Server, error) {
 	}
 	
 	timeout := time.Duration(opts.Timeout) * time.Second
-	return srv.NewServer(opts.Token, d, timeout, store.LocalFs{}), nil
+	
+	// Create notifier
+	var n srv.Notifier
+	if opts.NotifyURL != "" {
+		n = notifier.NewNtfy(opts.NotifyURL)
+		log.Printf("[INFO] notifications enabled for URL: %s", opts.NotifyURL)
+	} else {
+		n = notifier.NewNoop()
+	}
+	
+	return srv.NewServer(opts.Token, d, timeout, store.LocalFs{}, n), nil
 }
