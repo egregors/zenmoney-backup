@@ -4,6 +4,7 @@ package notifier
 import (
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Notifier is an interface for sending notifications.
@@ -42,7 +43,16 @@ func (n Ntfy) Notify(title, message string) error {
 	}
 	req.Header.Set("Title", title)
 	req.Header.Set("Tags", "warning,zenmoney-backup")
-	_, err = http.DefaultClient.Do(req)
+	
+	// Use a client with timeout to prevent hanging
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
-	return err
+	return nil
 }

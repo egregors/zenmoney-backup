@@ -50,7 +50,8 @@ func TestNtfy_Notify(t *testing.T) {
 		defer server.Close()
 
 		n := NewNtfy(server.URL)
-		// Should not return error because we don't check response status code
+		// The notification will succeed at the HTTP level even with a 500 status code
+		// because we don't check the response status code
 		err := n.Notify("Test Error", "test error message")
 		assert.NoError(t, err)
 	})
