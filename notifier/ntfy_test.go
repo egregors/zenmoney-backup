@@ -44,7 +44,7 @@ func TestNtfy_Notify(t *testing.T) {
 
 	t.Run("server error", func(t *testing.T) {
 		// Create a test server that returns an error
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 		defer server.Close()

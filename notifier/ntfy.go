@@ -2,6 +2,8 @@
 package notifier
 
 import (
+	"context"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -37,22 +39,25 @@ func NewNtfy(url string) *Ntfy {
 
 // Notify sends a notification to ntfy.sh with the given title and message.
 func (n Ntfy) Notify(title, message string) error {
-	req, err := http.NewRequest("POST", n.url, strings.NewReader(message))
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	
+	req, err := http.NewRequestWithContext(ctx, "POST", n.url, strings.NewReader(message))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Title", title)
 	req.Header.Set("Tags", "warning,zenmoney-backup")
 	
-	// Use a client with timeout to prevent hanging
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-	}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	// Discard response body to ensure connection reuse
+	_, _ = io.Copy(io.Discard, resp.Body)
 
 	return nil
 }
