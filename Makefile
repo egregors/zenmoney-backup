@@ -12,6 +12,8 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 # Docker variables
 IMAGE_NAME := zenb
 DOCKER_TAG := latest
+REGISTRY := ghcr.io/egregors
+FULL_IMAGE_NAME := $(REGISTRY)/zenmoney-backup
 
 .PHONY: all build clean docker docker-run docker-push run lint test help deps update-deps
 
@@ -40,18 +42,26 @@ clean:  ## Clean build artifacts
 	@rm -rf $(BUILD_DIR)
 
 ## Docker commands
+## Note: Docker images are automatically built and published to GitHub Container Registry
+## (ghcr.io/egregors/zenmoney-backup) on every merge to main and for version tags.
+## Local build commands below are for development and testing purposes.
 
-docker: ## Build Docker image
+docker: ## Build Docker image locally
 	@echo "Building Docker image $(IMAGE_NAME):$(DOCKER_TAG)..."
 	@docker build -t $(IMAGE_NAME):$(DOCKER_TAG) .
+	@echo "Note: Production images are auto-built and available at $(FULL_IMAGE_NAME)"
 
 docker-run: ## Run the application in Docker
 	@echo "Running $(IMAGE_NAME):$(DOCKER_TAG)..."
 	@docker run --rm -it $(IMAGE_NAME):$(DOCKER_TAG)
 
-docker-push: docker ## Build and push Docker image
-	@echo "Pushing Docker image $(IMAGE_NAME):$(DOCKER_TAG)..."
-	@docker push $(IMAGE_NAME):$(DOCKER_TAG)
+docker-push: docker ## Build and push Docker image to GHCR
+	@echo "Tagging Docker image for GHCR..."
+	@docker tag $(IMAGE_NAME):$(DOCKER_TAG) $(FULL_IMAGE_NAME):$(DOCKER_TAG)
+	@docker tag $(IMAGE_NAME):$(DOCKER_TAG) $(FULL_IMAGE_NAME):$(VERSION)
+	@echo "Pushing Docker image to GHCR $(FULL_IMAGE_NAME):$(DOCKER_TAG)..."
+	@docker push $(FULL_IMAGE_NAME):$(DOCKER_TAG)
+	@docker push $(FULL_IMAGE_NAME):$(VERSION)
 
 docker-clean: ## Clean Docker images
 	@echo "Cleaning Docker images..."

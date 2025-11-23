@@ -5,7 +5,7 @@ Automatically backup your [ZenMoney](https://zenmoney.ru) data using the officia
 - 🔐 Secure API-based authentication with OAuth tokens
 - 📦 Full data export as JSON files  
 - ⏰ Configurable backup schedule
-- 🐳 Lightweight Docker image (~8.5MB)
+- 🐳 Lightweight Docker image (~8.5MB) - automatically published on each release
 - 🔄 Automatic retry and error handling
 - 🔔 Error notifications via ntfy.sh
 
@@ -13,6 +13,7 @@ Automatically backup your [ZenMoney](https://zenmoney.ru) data using the officia
 <div align="center">
 
 [![Build Status](https://github.com/egregors/zenmoney-backup/actions/workflows/go.yml/badge.svg)](https://github.com/egregors/zenmoney-backup/actions) 
+[![Docker Build](https://github.com/egregors/zenmoney-backup/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/egregors/zenmoney-backup/actions/workflows/docker-publish.yml)
 [![Coverage Status](https://coveralls.io/repos/github/egregors/zenmoney-backup/badge.svg?branch=main)](https://coveralls.io/github/egregors/zenmoney-backup?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/egregors/zenmoney-backup)](https://goreportcard.com/report/github.com/egregors/zenmoney-backup)
 
@@ -38,7 +39,7 @@ docker run --rm \
   -e ZEN_TOKEN="your_oauth_token_here" \
   -e SLEEP_TIME="24h" \
   -v $(pwd)/backups:/backups \
-  zenb:latest
+  ghcr.io/egregors/zenmoney-backup:latest
 ```
 
 Replace `your_oauth_token_here` with your actual OAuth token from the step above.
@@ -99,7 +100,7 @@ docker run --rm \
   -e ZEN_TOKEN="your_token" \
   -e NOTIFY_URL="https://ntfy.sh/your_topic" \
   -v $(pwd)/backups:/backups \
-  zenb:latest
+  ghcr.io/egregors/zenmoney-backup:latest
 
 # With binary
 ./build/zenb -t "your_token" -n "https://ntfy.sh/your_topic"
@@ -172,7 +173,30 @@ make help
 
 ## 🐳 Docker
 
-### Build Image
+### Pre-built Images
+
+Docker images are automatically built and published to GitHub Container Registry on every merge to the main branch and for every release tag.
+
+**Available Tags:**
+- `latest` - Latest stable version from the main branch
+- `main` - Latest build from the main branch  
+- `v*.*.*` - Specific version tags (e.g., `v1.0.0`, `v1.1.0`)
+- `main-<sha>` - Specific commit builds
+
+**Supported Platforms:**
+- `linux/amd64` - x86_64 Linux systems
+- `linux/arm64` - ARM64 systems (e.g., Raspberry Pi, Apple Silicon)
+
+**Pull the Image:**
+```bash
+# Latest version
+docker pull ghcr.io/egregors/zenmoney-backup:latest
+
+# Specific version
+docker pull ghcr.io/egregors/zenmoney-backup:v1.0.0
+```
+
+### Build Image Locally
 
 ```bash
 make docker
@@ -190,7 +214,7 @@ docker run -d \
   -e ZEN_TOKEN="your_token" \
   -e SLEEP_TIME="12h" \
   -v /host/path/to/backups:/backups \
-  zenb:latest
+  ghcr.io/egregors/zenmoney-backup:latest
 
 # Check logs
 docker logs zenmoney-backup
@@ -321,7 +345,7 @@ ExecStart=/usr/bin/docker run --rm \
   -e TIMEOUT=10 \
   -e NOTIFY_URL=https://ntfy.sh/your_topic \
   -v /opt/zenmoney-backup/backups:/backups \
-  zenb:latest
+  ghcr.io/egregors/zenmoney-backup:latest
 # Stop the container gracefully
 ExecStop=/usr/bin/docker stop zenmoney-backup
 # Restart policy - always restart if the container stops
@@ -346,12 +370,12 @@ WantedBy=multi-user.target
 
 2. Pull or build the Docker image:
    ```bash
-   # Option 1: Build locally
+   # Option 1: Pull from GitHub Container Registry (recommended)
+   docker pull ghcr.io/egregors/zenmoney-backup:latest
+   
+   # Option 2: Build locally
    cd /path/to/zenmoney-backup
    make docker
-   
-   # Option 2: Pull from registry (if available)
-   # docker pull zenb:latest
    ```
 
 3. Create the systemd unit file:
