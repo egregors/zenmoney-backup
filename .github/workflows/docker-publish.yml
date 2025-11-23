@@ -20,7 +20,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
-
+      attestations: write
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
