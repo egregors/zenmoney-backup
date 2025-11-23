@@ -7,6 +7,7 @@ Automatically backup your [ZenMoney](https://zenmoney.ru) data using the officia
 - ⏰ Configurable backup schedule
 - 🐳 Lightweight Docker image (~8.5MB)
 - 🔄 Automatic retry and error handling
+- 🔔 Error notifications via ntfy.sh
 
 ---
 <div align="center">
@@ -46,6 +47,7 @@ Replace `your_oauth_token_here` with your actual OAuth token from the step above
 - `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
 - `SLEEP_TIME`: Backup interval (default: 24h)
 - `TIMEOUT`: Backup request timeout in seconds (default: 10)
+- `NOTIFY_URL`: ntfy.sh notification URL for error alerts (optional)
 - `DEBUG`: Set to `true` for debug logging
 
 **Volume mounting:**
@@ -76,7 +78,42 @@ make build-local
 | `-t` | `--zenmoney OAuth token` | `ZEN_TOKEN` | ZenMoney API Token (required) |
 | `-p` | `--sleep_time` | `SLEEP_TIME` | Backup interval (default: 24h) |
 | `-c` | `--timeout` | `TIMEOUT` | Backup request timeout in seconds (default: 10) |
+| `-n` | `--notify_url` | `NOTIFY_URL` | ntfy.sh notification URL (optional) |
 | | `--dbg` | `DEBUG` | Enable debug mode |
+
+## 🔔 Error Notifications
+
+ZenMoney Backup supports error notifications via [ntfy.sh](https://ntfy.sh). When configured, you'll receive push notifications whenever a backup error occurs (such as API failures, network issues, or storage problems).
+
+### Setting up ntfy.sh Notifications
+
+1. **Choose a topic name** for your notifications (e.g., `zenmoney-backup-alerts`)
+2. **Subscribe to the topic** on your device:
+   - **Mobile**: Download the [ntfy app](https://ntfy.sh) and subscribe to your topic
+   - **Desktop**: Use the [web app](https://ntfy.sh/app) or desktop client
+3. **Configure the notification URL**:
+
+```bash
+# With Docker
+docker run --rm \
+  -e ZEN_TOKEN="your_token" \
+  -e NOTIFY_URL="https://ntfy.sh/your_topic" \
+  -v $(pwd)/backups:/backups \
+  zenb:latest
+
+# With binary
+./build/zenb -t "your_token" -n "https://ntfy.sh/your_topic"
+```
+
+**Important:** Choose a unique topic name that others won't guess. Anyone who knows your topic name can read your notifications.
+
+### Self-hosted ntfy
+
+You can also use a self-hosted ntfy server:
+
+```bash
+-e NOTIFY_URL="https://your-ntfy-server.com/your_topic"
+```
 
 ## 📁 Backup Format
 
@@ -164,6 +201,7 @@ docker logs zenmoney-backup
 - `ZEN_TOKEN`: Your ZenMoney OAuth token (required)
 - `SLEEP_TIME`: Backup interval (e.g., "1h", "30m", "24h")
 - `TIMEOUT`: Backup request timeout in seconds (default: 10)
+- `NOTIFY_URL`: ntfy.sh notification URL for error alerts (optional)
 - `DEBUG`: Set to "true" for debug logging
 
 ## 🔄 Autostart on Linux (systemd)
@@ -199,6 +237,8 @@ RestartSec=10
 Environment="ZEN_TOKEN=your_token_here"
 Environment="SLEEP_TIME=24h"
 Environment="TIMEOUT=10"
+# Optional: Enable error notifications via ntfy.sh
+# Environment="NOTIFY_URL=https://ntfy.sh/your_topic"
 # Optional: Enable debug logging
 # Environment="DEBUG=true"
 
@@ -279,6 +319,7 @@ ExecStart=/usr/bin/docker run --rm \
   -e ZEN_TOKEN=your_token_here \
   -e SLEEP_TIME=24h \
   -e TIMEOUT=10 \
+  -e NOTIFY_URL=https://ntfy.sh/your_topic \
   -v /opt/zenmoney-backup/backups:/backups \
   zenb:latest
 # Stop the container gracefully
@@ -292,6 +333,8 @@ RestartSec=10
 # Enable the service to start on boot (multi-user target)
 WantedBy=multi-user.target
 ```
+
+**Note:** To enable error notifications, uncomment or add the `NOTIFY_URL` environment variable with your ntfy.sh topic URL. Remove the line or leave it empty to disable notifications.
 
 **Installation Steps:**
 
@@ -351,9 +394,10 @@ WantedBy=multi-user.target
 
 **Notes:**
 - Replace `your_token_here` with your actual ZenMoney OAuth token
+- Replace `your_topic` with your unique ntfy.sh topic name (for notifications)
 - Adjust paths (`/opt/zenmoney-backup`) to match your preferred installation location
 - For the binary variant, replace `your_username` with the user that should run the service
-- You can customize `SLEEP_TIME`, `TIMEOUT`, and other environment variables as needed
+- You can customize `SLEEP_TIME`, `TIMEOUT`, `NOTIFY_URL`, and other environment variables as needed
 - Both variants will automatically restart the service if it crashes
 - Use `sudo systemctl stop zenmoney-backup.service` to stop the service
 - Use `sudo systemctl disable zenmoney-backup.service` to prevent auto-start on boot
