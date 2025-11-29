@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/http"
 	"time"
 
 	log "github.com/go-pkgz/lgr"
@@ -46,7 +48,31 @@ func NewServer(token string, sleepTime time.Duration, timeout time.Duration, sto
 func (srv *Server) Run(ctx context.Context) {
 	log.Printf("[INFO] login...")
 
-	client, err := api.NewClient(srv.token)
+	// Configure HTTP transport with proper timeouts to avoid TLS handshake timeout issues
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		TLSHandshakeTimeout:   30 * time.Second,
+		ResponseHeaderTimeout: srv.timeout,
+		IdleConnTimeout:       90 * time.Second,
+		MaxIdleConns:          10,
+		MaxIdleConnsPerHost:   5,
+	}
+
+	httpClient := &http.Client{
+		Transport: transport,
+		Timeout:   srv.timeout,
+	}
+
+	log.Printf("[DEBUG] creating API client with timeout=%s, TLS handshake timeout=30s", srv.timeout)
+
+	client, err := api.NewClient(
+		srv.token,
+		api.WithHTTPClient(httpClient),
+		api.WithTimeout(srv.timeout),
+	)
 	if err != nil {
 		log.Printf("[ERROR] failed to create client: %s", err)
 		srv.sendNotification("Client Creation Error", err.Error())
@@ -89,16 +115,21 @@ func (srv *Server) saveExport(ctx context.Context) {
 }
 
 func (srv *Server) export(ctx context.Context) ([]byte, error) {
-	log.Printf("[DEBUG] downloading data ...")
+	log.Printf("[DEBUG] downloading data with timeout=%s ...", srv.timeout)
+	startTime := time.Now()
 	ctx, cancel := context.WithTimeout(ctx, srv.timeout)
 	defer cancel()
 
 	resp, err := srv.client.FullSync(ctx)
 	if err != nil {
-		log.Printf("[ERROR] failed to download data: %s", err)
+		elapsed := time.Since(startTime)
+		log.Printf("[ERROR] failed to download data after %s: %s", elapsed, err)
 		return nil, err
 	}
 	_ = resp
+
+	elapsed := time.Since(startTime)
+	log.Printf("[DEBUG] API request completed in %s", elapsed)
 
 	bs, err := json.Marshal(resp)
 	if err != nil {
