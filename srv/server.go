@@ -68,6 +68,9 @@ func (srv *Server) Run(ctx context.Context) {
 
 	log.Printf("[DEBUG] creating API client with timeout=%s, TLS handshake timeout=30s", srv.timeout)
 
+	// Note: We pass both WithHTTPClient and WithTimeout because:
+	// - httpClient.Timeout is the effective timeout enforced by Go's http package
+	// - WithTimeout passes the timeout to the SDK for internal configuration
 	client, err := api.NewClient(
 		srv.token,
 		api.WithHTTPClient(httpClient),
