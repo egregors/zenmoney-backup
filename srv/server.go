@@ -49,16 +49,19 @@ func (srv *Server) Run(ctx context.Context) {
 	log.Printf("[INFO] login...")
 
 	// Configure HTTP transport with proper timeouts to avoid TLS handshake timeout issues
+	// Use longer timeouts and disable HTTP/2 to improve reliability on slow/unstable networks
 	transport := &http.Transport{
 		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
+			Timeout:   60 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}).DialContext,
-		TLSHandshakeTimeout:   30 * time.Second,
+		TLSHandshakeTimeout:   60 * time.Second,
 		ResponseHeaderTimeout: srv.timeout,
 		IdleConnTimeout:       90 * time.Second,
 		MaxIdleConns:          10,
 		MaxIdleConnsPerHost:   5,
+		ForceAttemptHTTP2:     false, // Disable HTTP/2 to avoid connection reuse issues
+		DisableKeepAlives:     false, // Keep connections alive but with proper timeouts
 	}
 
 	httpClient := &http.Client{
@@ -66,7 +69,12 @@ func (srv *Server) Run(ctx context.Context) {
 		Timeout:   srv.timeout,
 	}
 
-	log.Printf("[DEBUG] creating API client with timeout=%s, TLS handshake timeout=30s", srv.timeout)
+	log.Printf("[DEBUG] creating API client with timeout=%s, TLS handshake timeout=60s", srv.timeout)
+
+	// Configure retry policy with longer wait times for network recovery
+	// This helps when the network is slow or unstable (e.g., on Raspberry Pi)
+	retryAttempts := 5
+	retryWaitTime := 10 * time.Second
 
 	// Note: We pass both WithHTTPClient and WithTimeout because:
 	// - httpClient.Timeout is the effective timeout enforced by Go's http package
@@ -75,6 +83,7 @@ func (srv *Server) Run(ctx context.Context) {
 		srv.token,
 		api.WithHTTPClient(httpClient),
 		api.WithTimeout(srv.timeout),
+		api.WithRetryPolicy(retryAttempts, retryWaitTime),
 	)
 	if err != nil {
 		log.Printf("[ERROR] failed to create client: %s", err)
