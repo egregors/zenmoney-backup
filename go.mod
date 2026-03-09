@@ -1,11 +1,11 @@
 module github.com/egregors/zenmoney-backup
 
-go 1.24
+go 1.26
 
 require (
 	github.com/go-pkgz/lgr v0.12.1
 	github.com/jessevdk/go-flags v1.6.1
-	github.com/nemirlev/zenmoney-go-sdk/v2 v2.0.4
+	github.com/nemirlev/zenmoney-go-sdk/v2 v2.0.5
 	github.com/stretchr/testify v1.11.1
 )
 
